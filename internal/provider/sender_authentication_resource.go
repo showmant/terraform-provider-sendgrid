@@ -20,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/kenzo0107/sendgrid"
-	"github.com/kenzo0107/terraform-provider-sendgrid/flex"
+	"github.com/showmant/terraform-provider-sendgrid/flex"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.

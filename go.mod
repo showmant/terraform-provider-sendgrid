@@ -1,4 +1,4 @@
-module github.com/kenzo0107/terraform-provider-sendgrid
+module github.com/showmant/terraform-provider-sendgrid
 
 go 1.22.3
 
