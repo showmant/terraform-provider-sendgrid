@@ -59,3 +59,57 @@ resource "sendgrid_sender_authentication" "test" {
 }
 `, domain)
 }
+
+// TestIsValidDkimSelector tests the isValidDkimSelector function
+func TestIsValidDkimSelector(t *testing.T) {
+	tests := []struct {
+		name     string
+		selector string
+		want     bool
+	}{
+		{
+			name:     "Valid selector - lowercase",
+			selector: "abc",
+			want:     true,
+		},
+		{
+			name:     "Valid selector - uppercase",
+			selector: "XYZ",
+			want:     true,
+		},
+		{
+			name:     "Valid selector - alphanumeric",
+			selector: "A1b",
+			want:     true,
+		},
+		{
+			name:     "Invalid selector - too short",
+			selector: "ab",
+			want:     false,
+		},
+		{
+			name:     "Invalid selector - too long",
+			selector: "abcd",
+			want:     false,
+		},
+		{
+			name:     "Invalid selector - special characters",
+			selector: "a$b",
+			want:     false,
+		},
+		{
+			name:     "Invalid selector - empty",
+			selector: "",
+			want:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isValidDkimSelector(tt.selector)
+			if got != tt.want {
+				t.Errorf("isValidDkimSelector(%s) = %v, want %v", tt.selector, got, tt.want)
+			}
+		})
+	}
+}
