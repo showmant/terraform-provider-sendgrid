@@ -6,7 +6,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -231,6 +233,16 @@ func (r *senderAuthenticationResource) Create(ctx context.Context, req resource.
 	data.Valid = types.BoolValue(o.Valid)
 	data.DNS = convertDNSToSetType(o.DNS)
 
+	// Set custom_dkim_selector from dns.dkim1.host and validate it
+	if o.DNS.Dkim1.Host != "" {
+		parts := strings.SplitN(o.DNS.Dkim1.Host, ".", 2) // Split by the first dot
+		if len(parts) > 0 && isValidDkimSelector(parts[0]) {
+			data.CustomDkimSelector = types.StringValue(parts[0]) // Use the part before the first dot if valid
+		} else {
+			data.CustomDkimSelector = types.StringNull() // Set to null if invalid
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -270,6 +282,18 @@ func (r *senderAuthenticationResource) Read(ctx context.Context, req resource.Re
 	data.Legacy = types.BoolValue(o.Legacy)
 	data.Valid = types.BoolValue(o.Valid)
 	data.DNS = convertDNSToSetType(o.DNS)
+
+	// Extract custom_dkim_selector from dns.dkim1.host and validate it
+	if o.DNS.Dkim1.Host != "" {
+		parts := strings.SplitN(o.DNS.Dkim1.Host, ".", 2) // Split by the first dot
+		if len(parts) > 0 && isValidDkimSelector(parts[0]) {
+			data.CustomDkimSelector = types.StringValue(parts[0]) // Use the part before the first dot if valid
+		} else {
+			data.CustomDkimSelector = types.StringNull() // Set to null if invalid
+		}
+	} else {
+		data.CustomDkimSelector = types.StringNull()
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
@@ -457,3 +481,10 @@ func convertDNSToSetType(dns sendgrid.DNS) (recordsSet basetypes.SetValue) {
 
 	return recordsSet
 }
+
+func isValidDkimSelector(selector string) bool {
+	// Check if the selector is exactly 3 alphanumeric characters
+	matched, _ := regexp.MatchString("^[a-zA-Z0-9]{3}$", selector)
+	return matched
+}
+
