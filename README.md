@@ -48,3 +48,8 @@ _Note:_ Acceptance tests create real resources, and often cost money to run.
 ```shell
 make testacc
 ```
+## Known issues
+
+### Acknowledgments
+
+Thanks @kenzo0107 for the code fork: https://github.com/kenzo0107/terraform-provider-sendgrid
